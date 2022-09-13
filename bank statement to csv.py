@@ -1,23 +1,23 @@
-import re
+# this works for Chase and Wells Fargo credit card statements. Bank statements would require retooling...
 
+import re
 import parse
 import pdfplumber
 import pandas as pd
 from collections import namedtuple
 
-transaction_date = re.compile(r'^\d\d\/\d\d')
-transaction_amount = re.compile(r'\d+\.\d\d$')
+filename = '010722 WellsFargo'
+openfile = "WFCredit/" + filename + ".pdf"
+savefile = "WFCredit/" + filename + ".csv"
 
-file = '20210921-statements-0025.pdf'
-lines = []
-total_check = 0
+transaction_date = re.compile(r'^\d+\/\d\d') #handle dates in MM/DD format
+transaction_amount = re.compile(r'(\d+\,)?\d+\.\d\d$') #handle amounts over 1000, including commas
 
 dates = []
 merchants = []
 amounts = []
 
-
-with pdfplumber.open(file) as pdf:
+with pdfplumber.open(openfile) as pdf:
     pages = pdf.pages
     for page in pdf.pages:
         text = page.extract_text()
@@ -26,14 +26,14 @@ with pdfplumber.open(file) as pdf:
             actual_transaction = transaction_amount.search(line) #if line ends with a dollar amount of format DD+.DD
             if has_date:
                 if actual_transaction: 
-                    #print(line)
+                    print(line)
                     dates += [has_date.group()]
-                    merchants.append(line[5:-10])
+                    merchants.append(line[5:-5])
                     amounts += [actual_transaction.group()]
 
-print (dates, merchants, amounts)
+#print (dates, merchants, amounts)
 zipped = list(zip(dates, merchants, amounts))
 df = pd.DataFrame(zipped, columns=['Date', 'Merchant', 'Amount'])
 
 print(df.head())
-df.to_csv('20210921-statements-0025.csv', index=False)
+df.to_csv(savefile, index=False)
