@@ -22,7 +22,7 @@ for file in pdfs:
             print(file)
 
             dates = []
-            merchants = []
+            descriptions = []
             amounts = []
             balances = []
 
@@ -30,11 +30,13 @@ for file in pdfs:
             first_page = pdf.pages[0]
             lines = first_page.extract_text().split("\n")
             year = None
+            filename_month = None
             while not year:
                 for line in lines:
                     if "through" in line:
                         startdate, enddate = line.split("through")
                         year = startdate.split()[-1]
+                        filename_month =f"{pd.to_datetime(startdate.split()[0], format="%B").month:02d}"
                         break
 
             for page in pdf.pages:
@@ -60,20 +62,20 @@ for file in pdfs:
                                 year = str(int(year) + 1)
 
                             dates += [f"{year}-{month}-{day}"]
-                            merchants.append(" ".join(line.split()[1:-2]))
+                            descriptions.append(" ".join(line.split()[1:-2]))
                             amounts += [line.split()[-2]]
                             balances += [actual_transaction.group()]
 
                             month_for_prev_transaction = month
 
-            zipped = list(zip(dates, merchants, amounts, balances))
+            zipped = list(zip(dates, descriptions, amounts, balances))
             df = pd.DataFrame(
                 zipped, columns=["Date", "Description", "Amount", "Balance"]
             )
 
             # TODO: Update the output path to match your directory structure
             df.to_csv(
-                f"../Bank Statements/Chase College Checking/csvs/{year}-{month}.csv"
+                f"../Bank Statements/Chase College Checking/csvs/{year}-{filename_month}.csv"
             )
 
 # TODO: Consider adding error handling and logging for robustness
