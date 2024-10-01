@@ -9,6 +9,7 @@ transaction_amount = re.compile(
     r"(\d+\,)?\d+\.\d\d$"
 )  # handle amounts over 1000, including commas
 
+# TODO: Update the path to match your directory structure
 pdfs = []
 for pdf in Path("../Bank Statements/Chase College Checking/pdfs/").glob("*.pdf"):
     pdfs.append(pdf)
@@ -25,6 +26,7 @@ for file in pdfs:
             amounts = []
             balances = []
 
+            # Extract the year from the first page
             first_page = pdf.pages[0]
             lines = first_page.extract_text().split("\n")
             year = None
@@ -69,6 +71,11 @@ for file in pdfs:
                 zipped, columns=["Date", "Description", "Amount", "Balance"]
             )
 
+            # TODO: Update the output path to match your directory structure
             df.to_csv(
                 f"../Bank Statements/Chase College Checking/csvs/{year}-{month}.csv"
             )
+
+# TODO: Consider adding error handling and logging for robustness
+# TODO: Add command-line arguments for input and output directories
+# TODO: Implement multi-threading for processing multiple PDFs simultaneously
